@@ -1,0 +1,62 @@
+Notes for installing tmux 
+
+Step1 - Install Tmux 
+sudo apt-get install tmux 
+
+Step 2 - Make Config
+touch ~/.tmux.conf 
+
+Step3 - Install powerline & TPM PLugin manager 
+sudo apt install powerline -y 
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+
+Step 4 add the following 
+
+```conf file 
+#This is a config file for the tmux sessions
+
+#This one is for adding the vim bindings
+set-window-option -g mode-keys vi
+
+# Add mouse Support 
+setw -g mouse on
+
+# tmux-loggin plugin config
+run-shell ~/DL/tmux-logging/logging.tmux
+
+# List of plugins
+set -g @plugin 'tmux-plugins/tpm' # TPM Plugin Manager
+set -g @plugin 'tmux-plugins/tmux-sensible' # Sensible Defaults 
+set -g @plugin 'seebi/tmux-colors-solarized' # Theme 
+set -g @plugin 'tmux-plugins/tmux-logging' # Loggin 
+
+# Other examples:
+# set -g @plugin 'github_username/plugin_name'
+# set -g @plugin 'git@github.com/user/plugin'
+# set -g @plugin 'git@bitbucket.com/user/plugin'
+
+# This to be put at the end of file
+# Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
+run -b '~/.tmux/plugins/tpm/tpm'
+run-shell 'powerline-config tmux setup'
+
+# Install nerd fonts 
+# git clone https://github.com/powerline/fonts.git --depth=1
+# install
+# cd fonts
+#./install.sh
+# cd ..find . -type f -newermt 2020-03-03 ! -newermt 2020-03-04 -size +25k -size -28k -name "*.config"
+# rm -rf fonts
+# Install tmux and powerline 
+# sudo apt intall tmux -y && sudo apt install powerline -y 
+# Install tpm - tmux plugin manager 
+# git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+# After installation initialize tmux with - tmux source .tmux.conf(this file contents is what u are reading now) 
+
+# Tmux Loggin Keys - https://github.com/tmux-plugins/tmux-logging - This has the keys 
+# 1. Begin Logging - prefix + Shift + p - Will make a file until exit session 
+# 2. Screen Capture - Will capture whatever is visible in terminal - prefix + alt + p
+# 3. Save Complete history - Capture whatever is in terminal - prefix alt + shift + p - Use this the most
+```
+
+Step 5 - Open tmux and do key Ctrl + B + I 

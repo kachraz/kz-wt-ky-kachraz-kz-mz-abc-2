@@ -1,0 +1,44 @@
+vhs is for making cool gifs of cli 
+
+Main Repo 
+https://github.com/charmbracelet/vhs
+
+Installation 
+brew install vhs
+
+Usage Procedure 
+1. Lets record what you want 
+$> vhs record > cassette.tape 
+- The cassete.tape file is generated where you can add further options to make gif 
+
+********************************************************************************
+Example Config
+# Source code for the VHS neofetch example.
+#
+# To run:
+#
+#     vhs < neofetch.tape
+
+# Where should we write the GIF?
+Output demo.gif
+
+# Set up a 1200x600 terminal with 46px font.
+Set FontSize 46
+Set Width 1200
+Set Height 600
+
+# Type a command in the terminal.
+Type "echo 'Welcome to VHS!'"
+
+# Pause for dramatic effect...
+Sleep 500ms
+
+# Run the command by pressing enter.
+Enter
+
+# Admire the output for a bit.
+Sleep 5s
+*****************************************************************
+
+3. Now with the tape  file we can create whatever is mentioned in the tape file
+$> vhs cassette.tape

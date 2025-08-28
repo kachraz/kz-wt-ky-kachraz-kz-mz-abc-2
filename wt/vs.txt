@@ -1,0 +1,160 @@
+{
+  // Editor Settings
+  "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always",
+    "source.fixAll": "always"
+  },
+  "editor.cursorBlinking": "expand",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.fontFamily": "GoMono Nerd Font",
+  "editor.fontLigatures": "yes",
+  "editor.fontSize": 17,
+  "editor.fontVariations": false,
+  "editor.formatOnSave": true,
+  "editor.guides.bracketPairs": true,
+  "editor.guides.bracketPairsHorizontal": true,
+  "editor.inlayHints.fontFamily": "Dubai",
+  "editor.inlayHints.fontSize": 13,
+  "editor.inlineSuggest.fontFamily": "",
+  "editor.lineHeight": 2,
+  "editor.linkedEditing": true,
+  "editor.renderWhitespace": "all",
+  "editor.smoothScrolling": true,
+  "editor.suggestFontSize": 15,
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "comment",
+        "settings": {
+          "fontStyle": "italic"
+        }
+      }
+    ]
+  },
+
+  // Files & Explorer
+  "explorer.fileNesting.patterns": {
+    "*.db": "${capture}.${extname}-*",
+    "*.db3": "${capture}.${extname}-*",
+    "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+    "*.jsx": "${capture}.js",
+    "*.s3db": "${capture}.${extname}-*",
+    "*.sdb": "${capture}.${extname}-*",
+    "*.sh": "shellscript",
+    "*.sqlite": "${capture}.${extname}-*",
+    "*.sqlite3": "${capture}.${extname}-*",
+    "*.ts": "${capture}.js",
+    "*.tsx": "${capture}.ts",
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb",
+    "tsconfig.json": "tsconfig.*.json"
+  },
+  "files.associations": {
+    "*.rs": "rust",
+    "*.sh": "shellscript"
+  },
+  "files.autoSave": "onFocusChange",
+
+  // Git
+  "git.autofetch": true,
+  "git.openRepositoryInParentFolders": "always",
+
+  // Terminal
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.fontFamily": "CaskaydiaCove Nerd Font",
+  "terminal.integrated.fontSize": 15,
+  "terminal.integrated.lineHeight": 1.8,
+
+  // Workbench
+  "workbench.colorTheme": "Best Themes - Monokai Awesome",
+  "workbench.iconTheme": "file-icons",
+  "workbench.list.smoothScrolling": true,
+  "workbench.settings.applyToAllProfiles": [],
+  "workbench.tree.enableStickyScroll": true,
+  "window.commandCenter": false,
+
+  // Extensions
+  "codeium.enableCodeLens": false,
+  "codeium.enableConfig": {
+    "*": true,
+    "django-html": true,
+    "go.mod": true,
+    "ignore": true,
+    "markdown": true,
+    "plaintext": true
+  },
+  "vsicons.dontShowNewVersionMessage": true,
+
+  // Language Specific
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    },
+    "ruff.importStrategy": "fromEnvironment",
+    "ruff.serverEnabled": true,
+    "ruff.format.enable": true,
+    "python.formatting.provider": "none"
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[less]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+
+  // Ruff-specific settings
+  "ruff.organizeImports": true,
+  "ruff.path": ["${workspaceFolder}/.venv/bin/ruff"],
+
+  // Other Settings
+  "js/ts.implicitProjectConfig.target": "ESNext",
+  "makefile.configureOnOpen": false,
+  "markdown.extension.print.imgToBase64": true,
+  "markdown.extension.print.theme": "dark",
+  "markdown.extension.toc.orderedList": true,
+  "notebook.lineNumbers": "on",
+  "prettier.semi": false,
+  "remote.autoForwardPortsSource": "hybrid",
+  "svelte.enable-ts-plugin": true,
+  "typescript.tsserver.maxTsServerMemory": 1024
+}

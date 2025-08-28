@@ -1,0 +1,7 @@
+These are ways to make smallest possible go executable size 
+
+Step1 : Compiling by removing libraries and others 
+> go build -ldflags="-s -w" -o src/main.go 
+
+Step2 : Futher Compress with upx 
+> upx --best main -o newMain 
