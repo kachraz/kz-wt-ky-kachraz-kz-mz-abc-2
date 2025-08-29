@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # =====================================================================
-# Solana Devnet Wallet Batch (Modular Execution)
-# Steps can be enabled/disabled in main()
+# Solana Devnet Wallet Batch (Reliable & Modular)
 # =====================================================================
 
 set -euo pipefail
@@ -9,11 +8,11 @@ set -euo pipefail
 # ---------------- CONFIG ----------------
 COUNT=10
 AIRDROP_SOL=2
-# ✅ Use a reliable alternative RPC endpoint
-RPC_URL="https://rpc.ankr.com/solana_devnet"
-OUTDIR=""  # Will be set dynamically
+# ✅ Clean, working RPC (from your knowledge base + reliable fallback)
+RPC_URL="https://api.devnet.solana.com"
+OUTDIR=""
 RETRIES=5
-SLEEP_BETWEEN=3
+SLEEP_BETWEEN=2
 TIMEOUT=15
 # ----------------------------------------
 
@@ -49,19 +48,13 @@ declare -a PUBS JSONS BALS
 
 # ---------------- FUNCS -----------------
 
-# Dynamically set OUTDIR only once
-set_outdir() {
-  OUTDIR="${PWD}/solana_wallets_$(date +%Y%m%d_%H%M%S)"
-  mkdir -p "$OUTDIR"
-  echo -e "${GREEN}Output directory: ${BOLD}$OUTDIR${RESET}"
-}
-
 # Create wallet -> returns "json|pubkey"
 create_wallet() {
   local idx=$1
   local json="${OUTDIR}/wallet_${idx}.json"
   solana-keygen new --no-bip39-passphrase --silent --outfile "$json" >/dev/null 2>&1
   local pk=$(solana-keygen pubkey "$json")
+  [[ -z "$pk" ]] && { echo -e "${RED}Failed to create wallet $idx${RESET}"; exit 1; }
   echo "$json|$pk"
 }
 
@@ -95,6 +88,7 @@ with_retries() {
 save_info() {
   local idx=$1 json=$2 pk=$3 bal=$4
   local txt="${OUTDIR}/wallet_${idx}.txt"
+  mkdir -p "$OUTDIR"  # Only create when saving
   cat > "$txt" <<EOF
 Wallet #$idx
 Public Key   : $pk
@@ -104,54 +98,91 @@ EOF
   echo -e "   ${GREEN}Info saved: ${txt}${RESET}"
 }
 
-# -------- BLOCKS (Steps) ----------------
+# Auto-detect latest wallet directory
+find_latest_wallet_dir() {
+  local dir=$(ls -1td ./solana_wallets_*/ 2>/dev/null | head -n1)
+  if [[ -n "$dir" && -d "$dir" ]]; then
+    OUTDIR="$dir"
+    echo -e "${GREEN}Found wallet directory: ${BOLD}$OUTDIR${RESET}"
+  else
+    echo -e "${RED}No existing wallet directory found.${RESET}"
+    return 1
+  fi
+}
 
+# Load wallets from disk
+load_wallets() {
+  title "Loading Wallets from Disk"
+  if ! find_latest_wallet_dir; then
+    echo -e "${RED}Aborting: Cannot load wallets.${RESET}"
+    return 1
+  fi
+
+  local loaded=0
+  for i in $(seq 1 "$COUNT"); do
+    local json="$OUTDIR/wallet_${i}.json"
+    if [[ -f "$json" ]]; then
+      local pk=$(solana-keygen pubkey "$json" 2>/dev/null || true)
+      if [[ -n "$pk" ]]; then
+        PUBS[i]="$pk"
+        JSONS[i]="$json"
+        echo -e "   ${BLUE}[Wallet $i]${RESET} Loaded: $pk"
+        ((loaded++))
+      fi
+    fi
+  done
+
+  if (( loaded == 0 )); then
+    echo -e "${RED}No wallets loaded. Run 'step_create_wallets' first.${RESET}"
+    return 1
+  fi
+  echo -e "${GREEN}✓ Loaded $loaded wallets${RESET}"
+}
+
+# Create wallets
 step_create_wallets() {
-  title "Step 1: Creating Wallets"
-  set_outdir
+  OUTDIR="${PWD}/solana_wallets_$(date +%Y%m%d_%H%M%S)"
+  mkdir -p "$OUTDIR"
+  title "Step 1: Creating $COUNT Wallets"
+  echo -e "${GREEN}Saving to: ${BOLD}$OUTDIR${RESET}"
 
   for i in $(seq 1 "$COUNT"); do
     local result
     result=$(create_wallet "$i")
     local json="${result%%|*}"
     local pk="${result##*|}"
-
-    echo -e "${BLUE}[Wallet $i]${RESET} Created: $pk"
     PUBS[i]="$pk"
     JSONS[i]="$json"
+    echo -e "   ${BLUE}[Wallet $i]${RESET} Created: $pk"
   done
 }
 
+# Request airdrops
 step_airdrops() {
   title "Step 2: Requesting Airdrops"
-  [[ -z "$OUTDIR" ]] && set_outdir
-
   for i in $(seq 1 "$COUNT"); do
     local pk="${PUBS[i]:-}"
-    if [[ -z "$pk" ]]; then
-      echo -e "   ${RED}[Wallet $i] No public key available${RESET}"
-      continue
-    fi
-    echo -e "   ${BLUE}Requesting $AIRDROP_SOL SOL airdrop to $pk${RESET}"
+    [[ -z "$pk" ]] && { echo -e "   ${RED}[Wallet $i] No public key${RESET}"; continue; }
+    echo -e "   ${BLUE}Airdropping $AIRDROP_SOL SOL to $pk${RESET}"
     if with_retries request_airdrop "$pk" >/dev/null; then
-      echo -e "   ${GREEN}✓ Airdrop successful${RESET}"
+      echo -e "   ${GREEN}✓ Success${RESET}"
     else
-      echo -e "   ${RED}✗ Airdrop failed after $RETRIES attempts${RESET}"
+      echo -e "   ${RED}✗ Failed after $RETRIES attempts${RESET}"
     fi
   done
 }
 
+# Check balances
 step_balances() {
   title "Step 3: Checking Balances"
-  [[ -z "$OUTDIR" ]] && set_outdir
+  if [[ -z "${PUBS[1]:-}" ]]; then
+    echo -e "${YELLOW}Public keys not found. Attempting to load from disk...${RESET}"
+    load_wallets || return 1
+  fi
 
   for i in $(seq 1 "$COUNT"); do
     local pk="${PUBS[i]:-}"
-    if [[ -z "$pk" ]]; then
-      echo -e "   ${RED}[Wallet $i] Missing public key!${RESET}"
-      BALS[i]="0"
-      continue
-    fi
+    [[ -z "$pk" ]] && { echo -e "   ${RED}[Wallet $i] Missing key${RESET}"; BALS[i]="0"; continue; }
     local bal
     bal=$(with_retries get_balance "$pk")
     BALS[i]="$bal"
@@ -160,6 +191,7 @@ step_balances() {
   done
 }
 
+# Final summary
 step_summary() {
   title "Summary"
   printf "${BOLD}Index  Public Key                                   Balance (SOL)${RESET}\n"
@@ -173,17 +205,16 @@ step_summary() {
 # ---------------- MAIN ------------------
 main() {
   trap 'echo -e "\n${YELLOW}Interrupted.${RESET}"; exit 1' INT
-
   check_deps
 
   title "Solana Devnet Wallet Batch"
 
-  # --- Enable the steps you need ---
-  # step_create_wallets   # ✅ Generate wallets
-  # step_airdrops         # 💸 Get free SOL
-  step_balances         # 📊 Check balances
-  step_summary          # 📋 Final report
-  # ---------------------------------
+  # ✅ Enable only the steps you need
+  step_create_wallets   # Run once to generate wallets
+  step_airdrops         # Run once to get free SOL
+  step_balances         # Check balance (auto-loads if needed)
+  step_summary          # Final report
 }
+# ----------------------------------------
 
 main "$@"
