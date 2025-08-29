@@ -8,7 +8,7 @@ minute_task() {
 
         # Perform your desired task here (e.g., check a log file, update a database)
         echo "[$timestamp] Minute task executed " >>time.txt
-        sudo chown -R vscode WX/
+        sudo chown -R codespace WX/
         ./g
 
         sleep 200 # Sleep for 60 seconds (1 minute)
