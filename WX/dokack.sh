@@ -25,7 +25,7 @@ dok_ack() {
     c1="docker pull ackeeblockchain/school-of-solana-arm:latest"
     c2="docker run -it --name school-of-solana \
   -p 8899:8899 -p 9900:9900 -p 8000:8000 -p 8080:8080 \
-  -v /workspaces/wt-ky-kachraz-kz-mz-abc-2/WX/STU:/panty \
+  -v /workspaces/kz-wt-ky-kachraz-kz-mz-abc-2/WX:/panty \
   ackeeblockchain/school-of-solana:latest"
     echo -e "${GREEN} Executing ${c1}${NC}"
     eval "$c1"
