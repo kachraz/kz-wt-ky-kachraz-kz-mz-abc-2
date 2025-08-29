@@ -9,8 +9,8 @@ set -euo pipefail
 # ---------------- CONFIG ----------------
 COUNT=10
 AIRDROP_SOL=2
-# ✅ Fixed RPC URL (clean + from your provided source)
-RPC_URL="https://api.devnet.solana.com"
+# ✅ Use a reliable alternative RPC endpoint
+RPC_URL="https://rpc.ankr.com/solana_devnet"
 OUTDIR=""  # Will be set dynamically
 RETRIES=5
 SLEEP_BETWEEN=3
@@ -108,7 +108,7 @@ EOF
 
 step_create_wallets() {
   title "Step 1: Creating Wallets"
-  set_outdir  # Create OUTDIR only when creating wallets
+  set_outdir
 
   for i in $(seq 1 "$COUNT"); do
     local result
@@ -124,7 +124,7 @@ step_create_wallets() {
 
 step_airdrops() {
   title "Step 2: Requesting Airdrops"
-  [[ -z "$OUTDIR" ]] && set_outdir  # Ensure OUTDIR exists
+  [[ -z "$OUTDIR" ]] && set_outdir
 
   for i in $(seq 1 "$COUNT"); do
     local pk="${PUBS[i]:-}"
@@ -179,12 +179,11 @@ main() {
   title "Solana Devnet Wallet Batch"
 
   # --- Enable the steps you need ---
-  step_create_wallets   # ✅ Generate wallets
-  step_airdrops         # 💸 Get free SOL
+  # step_create_wallets   # ✅ Generate wallets
+  # step_airdrops         # 💸 Get free SOL
   step_balances         # 📊 Check balances
   step_summary          # 📋 Final report
   # ---------------------------------
 }
-# ----------------------------------------
 
 main "$@"
