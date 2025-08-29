@@ -1,0 +1,10 @@
+Wallet #1
+Public Key   : 5GMYmzqXMmgoaGZDKG28zK6FsL7TQ5ugSXfK65M8Jymq
+Keypair JSON : Wrote new keypair to /panty/walz/solana_wallets_20250829_171447/wallet_1.json
+/panty/walz/solana_wallets_20250829_171447/wallet_1.json
+Balance      :    [33mRetry 1/5 for 5GMYmzqXMmgoaGZDKG28zK6FsL7TQ5ugSXfK65M8Jymq...[0m
+   [33mRetry 2/5 for 5GMYmzqXMmgoaGZDKG28zK6FsL7TQ5ugSXfK65M8Jymq...[0m
+   [33mRetry 3/5 for 5GMYmzqXMmgoaGZDKG28zK6FsL7TQ5ugSXfK65M8Jymq...[0m
+   [33mRetry 4/5 for 5GMYmzqXMmgoaGZDKG28zK6FsL7TQ5ugSXfK65M8Jymq...[0m
+   [33mRetry 5/5 for 5GMYmzqXMmgoaGZDKG28zK6FsL7TQ5ugSXfK65M8Jymq...[0m
+0 SOL
