@@ -9,7 +9,7 @@ set -euo pipefail
 # ---------------- CONFIG ----------------
 COUNT=10
 AIRDROP_SOL=2
-RPC_URL="https://api.devnet.solana.com"
+RPC_URL="https://api.devnet.solana.com"  # Fixed: Removed trailing spaces
 OUTDIR="${PWD}/solana_wallets_$(date +%Y%m%d_%H%M%S)"
 RETRIES=5
 SLEEP_BETWEEN=3
@@ -33,7 +33,13 @@ check_deps() { need solana; need solana-keygen; }
 # ----------------------------------------
 
 # ---------------- GLOBAL ----------------
+# Safely initialize arrays with empty values for indices 1 to COUNT
 declare -a PUBS JSONS BALS
+for i in $(seq 1 "$COUNT"); do
+  PUBS[i]=""
+  JSONS[i]=""
+  BALS[i]="0"
+done
 # ----------------------------------------
 
 # ---------------- FUNCS -----------------
@@ -60,18 +66,18 @@ get_balance() {
 
 with_retries() {
   local action=$1 arg=$2
-  local out="0"
+  local out=""
   for i in $(seq 1 "$RETRIES"); do
     if out=$($action "$arg"); then
       if [[ -n "$out" && "$out" != "0" ]]; then
         echo "$out"
-        return
+        return 0
       fi
     fi
     echo -e "   ${YELLOW}Attempt $i failed, retrying...${RESET}"
     sleep "$SLEEP_BETWEEN"
   done
-  echo "$out"
+  echo "0"  # Return 0 after retries fail
 }
 
 save_info() {
@@ -93,15 +99,19 @@ step_create_wallets() {
     result=$(create_wallet "$i")
     json="${result%%|*}"; pk="${result##*|}"
     echo -e "${BLUE}[Wallet $i]${RESET} Created: $pk"
-    PUBS[$i]="$pk"; JSONS[$i]="$json"
+    PUBS[i]="$pk"
+    JSONS[i]="$json"
   done
 }
 
 step_airdrops() {
   title "Step 2: Requesting airdrops"
   for i in $(seq 1 "$COUNT"); do
-    pk="${PUBS[$i]}"
-    [[ -z "$pk" ]] && { echo -e "${RED}[Wallet $i] Missing public key!${RESET}"; continue; }
+    pk="${PUBS[i]:-}"
+    if [[ -z "$pk" ]]; then
+      echo -e "${RED}[Wallet $i] Missing public key!${RESET}"
+      continue
+    fi
     echo -e "${BLUE}[Wallet $i]${RESET} Requesting airdrop for $pk..."
     with_retries request_airdrop "$pk" >/dev/null
   done
@@ -110,12 +120,16 @@ step_airdrops() {
 step_balances() {
   title "Step 3: Checking balances"
   for i in $(seq 1 "$COUNT"); do
-    pk="${PUBS[$i]}"
-    [[ -z "$pk" ]] && { echo -e "${RED}[Wallet $i] Missing public key!${RESET}"; continue; }
+    pk="${PUBS[i]:-}"
+    if [[ -z "$pk" ]]; then
+      echo -e "${RED}[Wallet $i] Missing public key!${RESET}"
+      BALS[i]="0"
+      continue
+    fi
     bal=$(with_retries get_balance "$pk")
-    BALS[$i]="$bal"
+    BALS[i]="$bal"
     echo -e "${GREEN}[Wallet $i] Balance:${RESET} $bal SOL"
-    save_info "$i" "${JSONS[$i]}" "$pk" "$bal"
+    save_info "$i" "${JSONS[i]:-}" "$pk" "$bal"
   done
 }
 
@@ -123,7 +137,7 @@ step_summary() {
   title "Summary"
   printf "${BOLD}Index  Public Key                                   Balance (SOL)${RESET}\n"
   for i in $(seq 1 "$COUNT"); do
-    printf "[%02d]   %-44s %8s\n" "$i" "${PUBS[$i]}" "${BALS[$i]}"
+    printf "[%02d]   %-44s %8s\n" "$i" "${PUBS[i]:-N/A}" "${BALS[i]:-0}"
   done
   echo -e "\n${GREEN}Done!${RESET} Wallets saved in: ${BOLD}$OUTDIR${RESET}"
 }
@@ -138,8 +152,8 @@ main() {
   title "Solana Devnet Wallet Batch"
 
   # >>>>> Comment/uncomment the blocks you need <<<<<
-  # step_create_wallets      # Step 1
-  # step_airdrops            # Step 2
+  step_create_wallets      # Step 1
+  step_airdrops            # Step 2
   step_balances            # Step 3
   step_summary             # Step 4
 }
