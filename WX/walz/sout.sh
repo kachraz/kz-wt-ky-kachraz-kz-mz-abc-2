@@ -6,7 +6,7 @@
 set -euo pipefail
 
 # ---------------- CONFIG ----------------
-COUNT=10
+COUNT=2
 AIRDROP_SOL=2
 # ✅ Clean, working RPC (from your knowledge base + reliable fallback)
 RPC_URL="https://api.devnet.solana.com"
@@ -210,8 +210,8 @@ main() {
   title "Solana Devnet Wallet Batch"
 
   # ✅ Enable only the steps you need
-  # step_create_wallets   # Run once to generate wallets
-  # step_airdrops         # Run once to get free SOL
+  step_create_wallets   # Run once to generate wallets
+  step_airdrops         # Run once to get free SOL
   step_balances         # Check balance (auto-loads if needed)
   step_summary          # Final report
 }
