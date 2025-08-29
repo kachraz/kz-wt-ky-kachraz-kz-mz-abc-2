@@ -152,8 +152,8 @@ main() {
   title "Solana Devnet Wallet Batch"
 
   # >>>>> Comment/uncomment the blocks you need <<<<<
-  step_create_wallets      # Step 1
-  step_airdrops            # Step 2
+  # step_create_wallets      # Step 1
+  # step_airdrops            # Step 2
   step_balances            # Step 3
   step_summary             # Step 4
 }
