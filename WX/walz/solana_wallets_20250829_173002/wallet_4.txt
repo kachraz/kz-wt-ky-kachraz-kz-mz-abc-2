@@ -1,0 +1,10 @@
+Wallet #4
+Public Key   : AWvhznUvAQPJoHaHgnuPq3wmmNY2hDmfBPXrkPWc4J1f
+Keypair JSON : Wrote new keypair to /panty/walz/solana_wallets_20250829_173002/wallet_4.json
+/panty/walz/solana_wallets_20250829_173002/wallet_4.json
+Balance      :    [33mAttempt 1 failed, retrying...[0m
+   [33mAttempt 2 failed, retrying...[0m
+   [33mAttempt 3 failed, retrying...[0m
+   [33mAttempt 4 failed, retrying...[0m
+   [33mAttempt 5 failed, retrying...[0m
+0 SOL
