@@ -1,0 +1,32 @@
+Dividers 
+
+•• ━━━━━ ••●•• ━━━━━ •• 
+
+https://emojicombos.com/dividers
+- Bunch of them to choose 
+
+---- 
+
+Code for starship 
+
+```Code
+[•• ━━━━━ ••●•• ━━━━━ ••](fg:165)
+```
+
+--- 
+
+Another diverider 
+
+```code 
+[◣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◢](fg:165)
+```
+
+Another Dividers
+
+```dic
+[__________________________________________](fg:165)
+```
+
+```code
+[⋆﹥━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━﹤⋆](fg:165)
+```

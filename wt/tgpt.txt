@@ -1,0 +1,10 @@
+Terminal GPT
+https://github.com/aandrew-me/tgpt
+- Use gpt3.5 from the terminal 
+- This one has a harcoded key 
+    -         AUTH_KEY, _ = base64.StdEncoding.DecodeString("QmVhcmVyIHNrLXVCckYxSHNpSHp5U3l4MlVtaFZQVDNCbGJrRkp5VUw5aUxhSmtxRXhEU0tOWDNBag==")
+    https://github.com/aandrew-me/tgpt/blob/a1b91b0148cfb055108f9e0b573cfce02bee5645/main.go#L36 - location of key
+- if shit fails then this is the one to use 
+
+Installation 
+curl -sSL https://raw.githubusercontent.com/aandrew-me/tgpt/main/install | bash -s /usr/local/bin

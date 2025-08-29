@@ -1,0 +1,4 @@
+Upload form command line to server for download later 
+syntax 
+
+curl bashupload.com -T StinlyMistressWorship.txt

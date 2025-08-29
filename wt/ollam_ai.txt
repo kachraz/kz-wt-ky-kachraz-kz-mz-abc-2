@@ -1,0 +1,22 @@
+https://ollama.ai/
+- This lets you run models locally, so far they have best models including mistral 
+
+Installation instruction - 
+This is taken from their official github repo 
+https://github.com/jmorganca/ollama
+> curl https://ollama.ai/install.sh | sh 
+
+Once installation is over 
+Open two terminals 
+Terminal 1         Terminal 2 
+>ollama serve      > ollama run mistral
+
+- Now in the second terminal you can type and chat with the model
+- There must be some way of running models in google collab , but larger models require more ram 
+or there is a hugging face method of running install
+
+Note Uncensore Model List 
+https://erichartford.com/uncensored-models
+
+Also here is a cheaper GPu Service 
+https://www.runpod.io/

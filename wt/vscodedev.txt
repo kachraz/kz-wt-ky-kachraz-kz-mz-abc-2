@@ -1,0 +1,168 @@
+{
+  // ============== EDITOR CONFIGURATION ==============
+  "editor.fontFamily": "GoMono Nerd Font",
+  "editor.fontSize": 17,
+  "editor.lineHeight": 2,
+  "editor.smoothScrolling": true,
+  "editor.cursorBlinking": "expand",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.renderWhitespace": "all",
+  "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+  "editor.guides.bracketPairs": true,
+  "editor.linkedEditing": true,
+  "editor.stickyScroll.enabled": true,
+  "editor.stickyTabStops": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+  "editor.inlayHints.fontFamily": "Dubai",
+  "editor.inlayHints.fontSize": 13,
+
+  // ============== WORKBENCH/THEMING ==============
+  "workbench.colorTheme": "Best Themes - Material Ocean Italic",
+  "workbench.iconTheme": "file-icons",
+  "workbench.list.smoothScrolling": true,
+
+  // ============== TERMINAL CONFIGURATION ==============
+  "terminal.integrated.fontFamily": "Monaspace Neon",
+  "terminal.integrated.fontSize": 16,
+  "terminal.integrated.lineHeight": 1.8,
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorStyle": "line",
+
+  // ============== GIT CONFIGURATION ==============
+  "git.enableSmartCommit": true,
+  "git.autofetch": true,
+  "git.openRepositoryInParentFolders": "always",
+
+  // ============== FILE HANDLING ==============
+  "files.autoSave": "onFocusChange",
+  "notebook.stickyScroll.enabled": true,
+
+  // ============== EXTENSION SPECIFIC ==============
+  "redhat.telemetry.enabled": true,
+  "vsicons.dontShowNewVersionMessage": true,
+  "remote.autoForwardPortsSource": "hybrid",
+  "markdown.extension.toc.orderedList": true,
+  "prettier.semi": false,
+
+  // ============== CODEIUM/COPILOT ==============
+  "codeium.enableConfig": {
+    "*": true,
+    "Log": true,
+    "markdown": true,
+    "plaintext": true,
+    "github-actions-workflow": true,
+    "go.mod": true
+  },
+  "codeium.enableCodeLens": false,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true,
+    "scminput": false
+  },
+  "geminicodeassist.inlineSuggestions.enableAuto": true,
+
+  // ============== RUST CONFIGURATION ==============
+  "rust-analyzer.checkOnSave": true,
+  "rust-analyzer.rustfmt.enable": true,
+  "rust-analyzer.formatOnSave": {
+    "enable": true,
+    "extraArgs": ["+nightly", "--edition", "2021"]
+  },
+  "rust-analyzer.procMacro.enable": true,
+  "rust-analyzer.inlayHints.chainingHints.enable": true,
+  "rust-analyzer.inlayHints.typeHints.enable": true,
+  "rust-analyzer.inlayHints.parameterHints.enable": true,
+  "rust-analyzer.inlayHints.maxLength": 20,
+  "rust-analyzer.completion.postfix.enable": true,
+  "rust-analyzer.imports.granularity.group": "module",
+  "rust-analyzer.imports.prefix": "plain",
+  "rust-analyzer.imports.merge.glob": true,
+  "rust-analyzer.showRequestFailedErrorNotification": false,
+
+  // ============== SOLIDITY CONFIGURATION ==============
+  "solidity.packageDefaultDependenciesContractsDirectory": "src",
+  "solidity.packageDefaultDependenciesDirectory": "lib",
+
+  // ============== ESLINT CONFIGURATION ==============
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always",
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "always"
+  },
+  "eslint.useFlatConfig": true,
+  "eslint.format.enable": true,
+
+  // ============== LANGUAGE-SPECIFIC FORMATTERS ==============
+  // 📝 General Formats
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[gitignore]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // 🐍 Python
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+
+  // 🦀 Rust
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+
+  // 📦 Shell/Environment Files
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[ignore]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[env]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+
+  // 🔗 Solidity
+  "[solidity]": {
+    "editor.defaultFormatter": "AckeeBlockchain.tools-for-solidity"
+  }
+}

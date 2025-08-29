@@ -1,0 +1,13 @@
+Sexy setting whichyou keep using all the time with github1s
+
+{
+    "workbench.colorTheme": "Tokyo Night Dark",
+    "workbench.list.smoothScrolling": true,
+    "editor.smoothScrolling": true,
+    "terminal.integrated.smoothScrolling": true,
+    "editor.renderWhitespace": "all",
+    "editor.guides.bracketPairs": "active",
+    "editor.lineHeight": 2,
+    "editor.fontSize": 17,
+    "editor.fontFamily": "GoMono Nerd Font"
+}

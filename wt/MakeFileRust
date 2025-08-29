@@ -1,0 +1,52 @@
+# Makefile for Cargo Projects using cargo-nextest
+
+# Colors
+YELLOW=\033[1;33m
+GREEN=\033[1;32m
+BLUE=\033[1;34m
+RESET=\033[0m
+
+# Default target
+.DEFAULT_GOAL := help
+
+# Targets
+help:
+	@echo ""
+	@echo "$(YELLOW)Available targets:$(RESET)"
+	@echo "  $(GREEN)build$(RESET)      - Compile the project"
+	@echo "  $(GREEN)run$(RESET)        - Build and run the project"
+	@echo "  $(GREEN)test$(RESET)       - Run tests with cargo-nextest"
+	@echo "  $(GREEN)clean$(RESET)      - Clean the target directory"
+	@echo "  $(GREEN)fmt$(RESET)        - Format the code using rustfmt"
+	@echo "  $(GREEN)clippy$(RESET)     - Run clippy for lint checks"
+	@echo "  $(GREEN)doc$(RESET)        - Generate documentation"
+	@echo "  $(GREEN)help$(RESET)       - Show this help message"
+	@echo ""
+
+build:
+	@echo "$(BLUE)==> Building...$(RESET)"
+	cargo build
+
+run:
+	@echo "$(BLUE)==> Running...$(RESET)"
+	cargo run
+
+test:
+	@echo "$(BLUE)==> Testing with nextest...$(RESET)"
+	cargo nextest run
+
+clean:
+	@echo "$(BLUE)==> Cleaning...$(RESET)"
+	cargo clean
+
+fmt:
+	@echo "$(BLUE)==> Formatting...$(RESET)"
+	cargo fmt
+
+clippy:
+	@echo "$(BLUE)==> Linting with Clippy...$(RESET)"
+	cargo clippy
+
+doc:
+	@echo "$(BLUE)==> Generating docs...$(RESET)"
+	cargo doc --open
