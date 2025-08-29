@@ -9,7 +9,7 @@ set -euo pipefail
 COUNT=2
 AIRDROP_SOL=2
 # ✅ Clean, working RPC (from your knowledge base + reliable fallback)
-RPC_URL="https://api.devnet.solana.com"
+RPC_URL="https://devnet.helius-rpc.com/?api-key=f1fac4d0-42af-4102-98a8-cf482a14c014"
 OUTDIR=""
 RETRIES=5
 SLEEP_BETWEEN=2
@@ -210,8 +210,8 @@ main() {
   title "Solana Devnet Wallet Batch"
 
   # ✅ Enable only the steps you need
-  step_create_wallets   # Run once to generate wallets
-  step_airdrops         # Run once to get free SOL
+  # step_create_wallets   # Run once to generate wallets
+  # step_airdrops         # Run once to get free SOL
   step_balances         # Check balance (auto-loads if needed)
   step_summary          # Final report
 }
