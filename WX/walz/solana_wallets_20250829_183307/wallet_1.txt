@@ -1,9 +1,0 @@
-Wallet #1
-Public Key   : BpQZsi4Sbfnk53oD2p8n7tj4F7K6EKawrLy8rz8shb3p
-Keypair JSON : /panty/walz/solana_wallets_20250829_183307/wallet_1.json
-Balance      :    [33mAttempt 1 failed, retrying...[0m
-   [33mAttempt 2 failed, retrying...[0m
-   [33mAttempt 3 failed, retrying...[0m
-   [33mAttempt 4 failed, retrying...[0m
-   [33mAttempt 5 failed, retrying...[0m
-0 SOL
