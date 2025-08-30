@@ -7,7 +7,7 @@
 # Set to false to disable functions
 # ENABLE_CREATE_WALLET=true
 ENABLE_CHECK_BALANCE=true
-# ENABLE_TRANSFER_FUNDS=true
+ENABLE_TRANSFER_FUNDS=true
 
 # =============================================
 # COLOR DEFINITIONS
@@ -42,8 +42,8 @@ RPC_URL="https://api.devnet.solana.com"
 # =============================================
 
 WALLET_DIR="./s1"
-BALANCE_FILE="./balances.txt"
-LOG_FILE="./solana_operations.log"
+BALANCE_FILE="$WALLET_DIR/balances.txt"
+LOG_FILE="$WALLET_DIR/solana_operations.log"
 
 # =============================================
 # DEFAULT AMOUNTS
