@@ -1,4 +1,4 @@
 Wallet #1
 Public Key   : 22NDfTbYZK6qw6BTEgLp7nr1LnWFGkwgcLtJka7yvJwN
-Keypair JSON : /panty/walz/solana_wallets_20250830_025409_592345473/wallet_1.json
+Keypair JSON : ./solana_wallets_20250830_025409_592345473//wallet_1.json
 Balance      : 0 SOL
