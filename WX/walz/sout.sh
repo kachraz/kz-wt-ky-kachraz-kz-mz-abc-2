@@ -98,32 +98,6 @@ create_wallet_directory() {
     fi
 }
 
-select_wallet_file() {
-    local wallet_files=("$WALLET_DIR"/*.json)
-    
-    if [ ${#wallet_files[@]} -eq 0 ]; then
-        print_error "No wallets found in $WALLET_DIR"
-        return 1
-    fi
-    
-    echo -e "${CYAN}Available wallets:${NC}"
-    for i in "${!wallet_files[@]}"; do
-        local pubkey=$(solana-keygen pubkey "${wallet_files[$i]}" 2>/dev/null || echo "Unknown")
-        echo -e "  ${GREEN}$(($i+1))${NC}) ${YELLOW}$(basename "${wallet_files[$i]}")${NC} -> ${BLUE}$pubkey${NC}"
-    done
-    
-    echo -e -n "${CYAN}Select a wallet (1-${#wallet_files[@]}): ${NC}"
-    read selection
-    
-    if [[ $selection =~ ^[0-9]+$ ]] && [ "$selection" -ge 1 ] && [ "$selection" -le ${#wallet_files[@]} ]; then
-        SELECTED_WALLET="${wallet_files[$(($selection-1))]}"
-        return 0
-    else
-        print_error "Invalid selection"
-        return 1
-    fi
-}
-
 # =============================================
 # WALLET FUNCTIONS
 # =============================================
@@ -177,31 +151,72 @@ check_balance() {
         return
     fi
     
-    echo -e "${CYAN}Checking wallet balance...${NC}"
+    echo -e "${CYAN}Checking wallet balances...${NC}"
     
-    if ! select_wallet_file; then
-        return
+    # Find all JSON files in the wallet directory
+    local wallet_files=("$WALLET_DIR"/*.json)
+    
+    if [ ${#wallet_files[@]} -eq 0 ] || [ ! -f "${wallet_files[0]}" ]; then
+        print_error "No wallets found in $WALLET_DIR"
+        return 1
     fi
     
-    local wallet_path="$SELECTED_WALLET"
-    local pubkey=$(solana-keygen pubkey "$wallet_path")
+    # Clear balance file
+    > "$BALANCE_FILE"
     
-    print_info "Checking balance for: $pubkey"
+    # Check balance for each wallet
+    local total_balance=0
+    local wallet_count=0
     
-    # Get balance
-    local balance=$(solana balance "$pubkey" --url $RPC_URL 2>/dev/null)
+    for wallet_file in "${wallet_files[@]}"; do
+        if [ -f "$wallet_file" ]; then
+            local pubkey=$(solana-keygen pubkey "$wallet_file" 2>/dev/null)
+            if [ -n "$pubkey" ]; then
+                print_info "Checking balance for: ${BLUE}$pubkey${NC}"
+                
+                # Get balance
+                local balance_output=$(solana balance "$pubkey" --url $RPC_URL 2>/dev/null)
+                
+                if [ $? -eq 0 ]; then
+                    # Extract just the numeric balance value
+                    local balance=$(echo "$balance_output" | grep -oE '[0-9.]+')
+                    
+                    if [ -n "$balance" ]; then
+                        print_status "Balance: ${GREEN}$balance SOL${NC}"
+                        
+                        # Write to balance file
+                        echo "$(date '+%Y-%m-%d %H:%M:%S') - $pubkey - $balance SOL" >> "$BALANCE_FILE"
+                        
+                        # Add to total
+                        total_balance=$(echo "$total_balance + $balance" | bc)
+                        ((wallet_count++))
+                    else
+                        print_warning "Could not parse balance for $pubkey"
+                        echo "$(date '+%Y-%m-%d %H:%M:%S') - $pubkey - ERROR: Could not parse balance" >> "$BALANCE_FILE"
+                    fi
+                else
+                    print_error "Failed to check balance for $pubkey"
+                    echo "$(date '+%Y-%m-%d %H:%M:%S') - $pubkey - ERROR: Failed to check balance" >> "$BALANCE_FILE"
+                fi
+                echo
+            else
+                print_warning "Could not get public key for $wallet_file"
+            fi
+        fi
+    done
     
-    if [ $? -eq 0 ]; then
-        print_status "Balance: $balance"
+    # Print summary
+    if [ $wallet_count -gt 0 ]; then
+        echo -e "${GREEN}=============================================${NC}"
+        echo -e "${GREEN}Summary:${NC}"
+        echo -e "${GREEN}Checked $wallet_count wallets${NC}"
+        echo -e "${GREEN}Total balance: $total_balance SOL${NC}"
+        echo -e "${GREEN}Balances written to: $BALANCE_FILE${NC}"
+        echo -e "${GREEN}=============================================${NC}"
         
-        # Write to balance file
-        echo "$(date '+%Y-%m-%d %H:%M:%S') - $pubkey - $balance" >> "$BALANCE_FILE"
-        print_info "Balance written to: $BALANCE_FILE"
-        
-        log_message "Checked balance for $pubkey: $balance"
+        log_message "Checked balances for $wallet_count wallets. Total: $total_balance SOL"
     else
-        print_error "Failed to check balance"
-        log_message "Failed to check balance for: $pubkey"
+        print_error "No valid wallets found or all balance checks failed"
     fi
 }
 
@@ -213,12 +228,31 @@ transfer_funds() {
     
     echo -e "${CYAN}Transferring funds between wallets...${NC}"
     
-    # Select sender wallet
-    echo -e "${YELLOW}Select SENDER wallet:${NC}"
-    if ! select_wallet_file; then
-        return
+    # Find all JSON files in the wallet directory
+    local wallet_files=("$WALLET_DIR"/*.json)
+    
+    if [ ${#wallet_files[@]} -eq 0 ] || [ ! -f "${wallet_files[0]}" ]; then
+        print_error "No wallets found in $WALLET_DIR"
+        return 1
     fi
-    local from_wallet="$SELECTED_WALLET"
+    
+    # Show available wallets
+    echo -e "${CYAN}Available wallets:${NC}"
+    for i in "${!wallet_files[@]}"; do
+        local pubkey=$(solana-keygen pubkey "${wallet_files[$i]}" 2>/dev/null || echo "Unknown")
+        echo -e "  ${GREEN}$(($i+1))${NC}) ${YELLOW}$(basename "${wallet_files[$i]}")${NC} -> ${BLUE}$pubkey${NC}"
+    done
+    
+    # Select sender wallet
+    echo -e -n "${CYAN}Select SENDER wallet (1-${#wallet_files[@]}): ${NC}"
+    read selection
+    
+    if [[ ! "$selection" =~ ^[0-9]+$ ]] || [ "$selection" -lt 1 ] || [ "$selection" -gt ${#wallet_files[@]} ]; then
+        print_error "Invalid selection"
+        return 1
+    fi
+    
+    local from_wallet="${wallet_files[$(($selection-1))]}"
     local from_pubkey=$(solana-keygen pubkey "$from_wallet")
     
     # Get recipient address
@@ -280,7 +314,7 @@ show_menu() {
     fi
     
     if [ "$ENABLE_CHECK_BALANCE" = true ]; then
-        echo -e "  ${GREEN}2${NC}) Check wallet balance"
+        echo -e "  ${GREEN}2${NC}) Check ALL wallet balances"
     fi
     
     if [ "$ENABLE_TRANSFER_FUNDS" = true ]; then
@@ -305,47 +339,43 @@ clear
 print_header
 
 # =============================================
-# MAIN LOOP
+# MAIN EXECUTION (RUN ONCE AND EXIT)
 # =============================================
 
-while true; do
-    show_menu
-    read choice
-    
-    case $choice in
-        1)
-            if [ "$ENABLE_CREATE_WALLET" = true ]; then
-                create_wallet
-            else
-                print_warning "This option is disabled"
-            fi
-            ;;
-        2)
-            if [ "$ENABLE_CHECK_BALANCE" = true ]; then
-                check_balance
-            else
-                print_warning "This option is disabled"
-            fi
-            ;;
-        3)
-            if [ "$ENABLE_TRANSFER_FUNDS" = true ]; then
-                transfer_funds
-            else
-                print_warning "This option is disabled"
-            fi
-            ;;
-        0)
-            print_status "Goodbye!"
-            exit 0
-            ;;
-        *)
-            print_error "Invalid option"
-            ;;
-    esac
-    
-    echo
-    echo -e -n "${CYAN}Press Enter to continue...${NC}"
-    read -r
-    clear
-    print_header
-done
+show_menu
+read choice
+
+case $choice in
+    1)
+        if [ "$ENABLE_CREATE_WALLET" = true ]; then
+            create_wallet
+        else
+            print_warning "This option is disabled"
+        fi
+        ;;
+    2)
+        if [ "$ENABLE_CHECK_BALANCE" = true ]; then
+            check_balance
+        else
+            print_warning "This option is disabled"
+        fi
+        ;;
+    3)
+        if [ "$ENABLE_TRANSFER_FUNDS" = true ]; then
+            transfer_funds
+        else
+            print_warning "This option is disabled"
+        fi
+        ;;
+    0)
+        print_status "Goodbye!"
+        exit 0
+        ;;
+    *)
+        print_error "Invalid option"
+        ;;
+esac
+
+echo
+print_info "Operation completed. Exiting."
+log_message "Script execution completed"
