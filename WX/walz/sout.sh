@@ -41,7 +41,7 @@ RPC_URL="https://api.devnet.solana.com"
 # FILE PATHS
 # =============================================
 
-WALLET_DIR="./wallets"
+WALLET_DIR="./s1"
 BALANCE_FILE="./balances.txt"
 LOG_FILE="./solana_operations.log"
 

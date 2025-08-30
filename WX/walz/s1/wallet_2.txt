@@ -1,4 +1,0 @@
-Wallet #2
-Public Key   : F3wRA1Q8d1mCArZHivLkJtAWqvgoQhmHLBfuGSAsAeA
-Keypair JSON : ./s1//wallet_2.json
-Balance      : 0 SOL
