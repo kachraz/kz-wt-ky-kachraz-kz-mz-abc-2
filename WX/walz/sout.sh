@@ -187,8 +187,8 @@ check_balance() {
                         # Write to balance file
                         echo "$(date '+%Y-%m-%d %H:%M:%S') - $pubkey - $balance SOL" >> "$BALANCE_FILE"
                         
-                        # Add to total
-                        total_balance=$(echo "$total_balance + $balance" | bc)
+                        # Add to total using bash arithmetic (avoid bc dependency)
+                        total_balance=$(awk "BEGIN {print $total_balance + $balance; exit}")
                         ((wallet_count++))
                     else
                         print_warning "Could not parse balance for $pubkey"
