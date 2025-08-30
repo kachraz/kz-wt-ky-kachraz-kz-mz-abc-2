@@ -210,7 +210,7 @@ main() {
   title "Solana Devnet Wallet Batch"
 
   # ✅ Enable only the steps you need
-  step_create_wallets   # Run once to generate wallets
+  # step_create_wallets   # Run once to generate wallets
   step_airdrops         # Run once to get free SOL
   step_balances         # Check balance (auto-loads if needed)
   step_summary          # Final report
