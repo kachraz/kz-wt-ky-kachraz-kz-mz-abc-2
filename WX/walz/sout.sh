@@ -113,7 +113,7 @@ with_retries() {
       continue
     fi
 
-    if result=$(timeout "$TIMEOUT"s $action "$arg" 2>/dev/null); then
+    if result=$(timeout "$TIMEOUT"s "$action" "$arg" 2>/dev/null); then
       # Avoid false failure on zero balance
       if [[ -n "$result" ]] && ( [[ "$result" != "0" ]] || [[ "$action" == "get_balance" ]] ); then
         echo "$result"
@@ -262,7 +262,7 @@ main() {
   # 👉 Uncomment ONE of these two options:
 
   # OPTION A: Create new wallets (run once)
-  step_create_wallets
+  # step_create_wallets
 
   # OPTION B: Load existing wallets (comment out above line)
   # if ! load_wallets; then
@@ -271,7 +271,7 @@ main() {
   # fi
 
   # Always run these
-  step_airdrops
+  # step_airdrops
   step_balances
   step_summary
 }
