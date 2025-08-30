@@ -262,7 +262,7 @@ main() {
   # 👉 Uncomment ONE of these two options:
 
   # OPTION A: Create new wallets (run once)
-  step_create_wallets
+  # step_create_wallets
 
   # OPTION B: Load existing wallets (comment out above line)
   # if ! load_wallets; then
