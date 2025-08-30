@@ -1,4 +1,0 @@
-Wallet #2
-Public Key   : 2DcvE2HcExQ9q2aP9R7tEUPLGWXMSa4yiuyDwaTGxP29
-Keypair JSON : ./solana_wallets_20250830_025409_592345473//wallet_2.json
-Balance      : 0 SOL
