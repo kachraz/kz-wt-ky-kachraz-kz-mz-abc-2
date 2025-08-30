@@ -1,9 +1,0 @@
-Wallet #1
-Public Key   : BSQeuCHtjMszNss9sn8jfeGCBETWH4wGX6yVsnPLmwRq
-Keypair JSON : ./solana_wallets_20250830_023541//wallet_1.json
-Balance      :    [33mAttempt 1 failed, retrying...[0m
-   [33mAttempt 2 failed, retrying...[0m
-   [33mAttempt 3 failed, retrying...[0m
-   [33mAttempt 4 failed, retrying...[0m
-   [33mAttempt 5 failed, retrying...[0m
-0 SOL
