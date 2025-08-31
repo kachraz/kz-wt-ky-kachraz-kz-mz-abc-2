@@ -4,6 +4,7 @@
 
 # Diraz Description
 
-|       Diraz       |   what   |
-| :---------------: | :------: |
-| [`walz`](./walz/) | Walleina |
+|       Diraz       |      what      |
+| :---------------: | :------------: |
+| [`walz`](./walz/) |    Walleina    |
+|  [`tzt`](./tzt/)  | Achcory Testaz |
