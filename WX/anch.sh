@@ -10,6 +10,20 @@ ENABLE_ANCHOR_DEPLOY=true
 ENABLE_ANCHOR_TEST=true
 
 # =============================================
+# WALLET CONFIGURATION
+# =============================================
+
+WALLET_DIR="$HOME/.config/solana"  # Default Solana wallet directory
+WALLET_FILE="id.json"              # Default wallet file name
+
+# =============================================
+# NETWORK CONFIGURATION - SET TO DEVNET
+# =============================================
+
+DEFAULT_CLUSTER="devnet"
+RPC_URL="https://api.devnet.solana.com"
+
+# =============================================
 # COLOR DEFINITIONS
 # =============================================
 
@@ -34,7 +48,7 @@ NC_BG='\033[49m'
 
 print_header() {
     echo -e "${BG_BLUE}${WHITE}=============================================${NC}${NC_BG}"
-    echo -e "${BG_BLUE}${WHITE}           ANCHOR PROJECT MANAGER            ${NC}${NC_BG}"
+    echo -e "${BG_BLUE}${WHITE}           ANCHOR DEVNET DEPLOY MANAGER       ${NC}${NC_BG}"
     echo -e "${BG_BLUE}${WHITE}=============================================${NC}${NC_BG}"
     echo
 }
@@ -55,9 +69,33 @@ print_info() {
     echo -e "${BLUE}ℹ${NC} $1"
 }
 
+get_balance() {
+    solana balance --url $RPC_URL 2>/dev/null | awk '{print $1}' || echo "0"
+}
+
+show_balance() {
+    local balance=$(get_balance)
+    echo -e "${CYAN}Current balance: ${GREEN}$balance SOL${NC}"
+    echo "$balance"
+}
+
+request_airdrop() {
+    local amount=${1:-2}
+    echo -e "${CYAN}Requesting airdrop of $amount SOL...${NC}"
+    solana airdrop "$amount" --url $RPC_URL
+    
+    if [ $? -eq 0 ]; then
+        print_status "Airdrop successful"
+        show_balance
+    else
+        print_error "Airdrop failed"
+        return 1
+    fi
+}
+
 check_anchor_installed() {
     if ! command -v anchor &> /dev/null; then
-        print_error "Anchor CLI is not installed. Please install it first."
+        print_error "Anchor CLI is not installed. Please install it first." 
         print_info "Installation instructions: https://www.anchor-lang.com/docs/installation"
         print_info "Quick install: cargo install --git https://github.com/coral-xyz/anchor avm --force && avm install latest && avm use latest"
         exit 1
@@ -66,10 +104,48 @@ check_anchor_installed() {
 
 check_solana_installed() {
     if ! command -v solana &> /dev/null; then
-        print_error "Solana CLI is not installed. Please install it first."
+        print_error "Solana CLI is not installed. Please install it first." 
         print_info "Installation instructions: https://solana.com/docs/intro/installation"
         print_info "Quick install: sh -c \"\$(curl -sSfL https://release.anza.xyz/stable/install)\""
         exit 1
+    fi
+}
+
+check_wallet() {
+    local wallet_path="$WALLET_DIR/$WALLET_FILE"
+    
+    if [ ! -f "$wallet_path" ]; then
+        print_error "Wallet not found: $wallet_path"
+        print_info "Available wallets in $WALLET_DIR:"
+        ls -la "$WALLET_DIR"/*.json 2>/dev/null || echo "No wallet files found"
+        return 1
+    fi
+    
+    # Set the wallet
+    solana config set --keypair "$wallet_path"
+    solana config set --url $RPC_URL
+    
+    local pubkey=$(solana-keygen pubkey "$wallet_path")
+    print_status "Using wallet: ${GREEN}$pubkey${NC}"
+    print_status "Wallet file: ${BLUE}$wallet_path${NC}"
+    
+    return 0
+}
+
+ensure_min_balance() {
+    local min_balance=${1:-1.5}
+    local balance=$(get_balance)
+    
+    # Simple numeric comparison without bc
+    if [ $(echo "$balance < $min_balance" | awk '{print ($1 < $3)}') -eq 1 ]; then
+        print_warning "Low balance: $balance SOL (minimum recommended: $min_balance SOL)"
+        echo -e -n "${CYAN}Request airdrop? (y/N): ${NC}"
+        read confirm
+        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+            request_airdrop 2
+        fi
+    else
+        print_info "Balance sufficient: ${GREEN}$balance SOL${NC}"
     fi
 }
 
@@ -84,6 +160,9 @@ anchor_clean() {
     fi
     
     echo -e "${CYAN}Cleaning Anchor project...${NC}"
+    
+    # Show balance before
+    local start_balance=$(show_balance)
     
     # Clean target directory
     if [ -d "target" ]; then
@@ -109,6 +188,10 @@ anchor_clean() {
         print_error "Failed to clean project"
         return 1
     fi
+    
+    # Show balance after
+    local end_balance=$(show_balance)
+    echo -e "${CYAN}Balance change: ${GREEN}$start_balance${NC} → ${GREEN}$end_balance${NC} SOL${NC}"
 }
 
 anchor_build() {
@@ -118,6 +201,9 @@ anchor_build() {
     fi
     
     echo -e "${CYAN}Building Anchor project...${NC}"
+    
+    # Show balance before
+    local start_balance=$(show_balance)
     
     # Build the project
     print_info "Running anchor build"
@@ -135,6 +221,10 @@ anchor_build() {
         print_error "Build failed"
         return 1
     fi
+    
+    # Show balance after
+    local end_balance=$(show_balance)
+    echo -e "${CYAN}Balance change: ${GREEN}$start_balance${NC} → ${GREEN}$end_balance${NC} SOL${NC}"
 }
 
 anchor_deploy() {
@@ -143,53 +233,50 @@ anchor_deploy() {
         return
     fi
     
-    echo -e "${CYAN}Deploying Anchor project...${NC}"
+    echo -e "${CYAN}Deploying Anchor project to DevNet...${NC}"
     
-    # Check if we're on the right network
-    local current_cluster=$(solana config get | grep "RPC URL" | awk '{print $3}')
-    if [[ ! "$current_cluster" =~ (devnet|testnet|localhost) ]]; then
-        print_warning "You are deploying to ${RED}$current_cluster${NC}"
-        echo -e -n "${CYAN}Are you sure you want to deploy here? (y/N): ${NC}"
-        read confirm
-        if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-            print_info "Deployment cancelled"
-            return
-        fi
-    fi
+    # Ensure minimum balance
+    ensure_min_balance 1.5
     
-    # Check balance
-    local balance=$(solana balance | awk '{print $1}')
-    print_info "Current balance: ${GREEN}$balance SOL${NC}"
-    
-    if (( $(echo "$balance < 1.0" | bc -l) )); then
-        print_warning "Low balance. You might need to request an airdrop"
-        if [[ "$current_cluster" =~ (devnet|testnet|localhost) ]]; then
-            echo -e -n "${CYAN}Request airdrop? (y/N): ${NC}"
-            read confirm
-            if [[ "$confirm" =~ ^[Yy]$ ]]; then
-                solana airdrop 2
-            fi
-        fi
-    fi
+    # Show balance before
+    local start_balance=$(show_balance)
     
     # Deploy the project
-    print_info "Running anchor deploy"
-    anchor deploy
+    print_info "Running anchor deploy --provider.cluster devnet" 
+    anchor deploy --provider.cluster devnet
     
     if [ $? -eq 0 ]; then
-        print_status "Project deployed successfully"
+        print_status "Project deployed successfully to DevNet!"
+        
+        # Show deployment details
+        local program_id=$(grep -E '^declare_id!\("([^"]+)"\)' programs/*/src/lib.rs | head -1 | cut -d'"' -f2)
+        if [ -n "$program_id" ]; then
+            print_info "Program deployed at: ${GREEN}$program_id${NC}"
+            print_info "Explorer URL: https://explorer.solana.com/address/$program_id?cluster=devnet"
+        fi
     else
         print_error "Deployment failed"
         
-        # Check if it's a buffer account issue
-        if grep -q "buffer" <<< "$(anchor deploy 2>&1)"; then
-            print_info "You may need to close hanging buffer accounts:"
-            print_info "Run: solana program show --buffers"
-            print_info "Then: solana program close <BUFFER_ADDRESS>"
+        # Check for common deployment issues 
+        local deploy_output=$(anchor deploy --provider.cluster devnet 2>&1)
+        
+        if echo "$deploy_output" | grep -q "buffer"; then
+            print_info "Buffer account issue detected. You may need to close hanging buffer accounts:"
+            print_info "Run: solana program show --buffers --url $RPC_URL"
+            print_info "Then: solana program close <BUFFER_ADDRESS> --url $RPC_URL" 
+        fi
+        
+        if echo "$deploy_output" | grep -q "insufficient funds"; then
+            print_info "Insufficient funds. Request more SOL with: solana airdrop 2 --url $RPC_URL" 
         fi
         
         return 1
     fi
+    
+    # Show balance after
+    local end_balance=$(show_balance)
+    local balance_change=$(awk "BEGIN {print $start_balance - $end_balance; exit}")
+    echo -e "${CYAN}Balance change: ${GREEN}$start_balance${NC} → ${GREEN}$end_balance${NC} SOL (Cost: ${RED}$balance_change${NC} SOL)${NC}"
 }
 
 anchor_test() {
@@ -198,28 +285,26 @@ anchor_test() {
         return
     fi
     
-    echo -e "${CYAN}Testing Anchor project...${NC}"
+    echo -e "${CYAN}Testing Anchor project on DevNet...${NC}"
     
-    # Check if we need to start a local validator
-    local current_cluster=$(solana config get | grep "RPC URL" | awk '{print $3}')
-    if [[ "$current_cluster" =~ (localhost|127.0.0.1) ]]; then
-        print_info "Local cluster detected. Checking if validator is running..."
-        if ! solana ping >/dev/null 2>&1; then
-            print_warning "Local validator not running. Tests may fail."
-            print_info "Start validator with: solana-test-validator"
-        fi
-    fi
+    # Show balance before
+    local start_balance=$(show_balance)
     
     # Run tests
-    print_info "Running anchor test"
-    anchor test
+    print_info "Running anchor test --provider.cluster devnet"
+    anchor test --provider.cluster devnet
     
     if [ $? -eq 0 ]; then
-        print_status "Tests passed successfully"
+        print_status "Tests passed successfully on DevNet"
     else
-        print_error "Tests failed"
+        print_error "Tests failed on DevNet"
         return 1
     fi
+    
+    # Show balance after
+    local end_balance=$(show_balance)
+    local balance_change=$(awk "BEGIN {print $start_balance - $end_balance; exit}")
+    echo -e "${CYAN}Balance change: ${GREEN}$start_balance${NC} → ${GREEN}$end_balance${NC} SOL (Cost: ${RED}$balance_change${NC} SOL)${NC}"
 }
 
 # =============================================
@@ -228,7 +313,7 @@ anchor_test() {
 
 show_menu() {
     echo
-    echo -e "${CYAN}Select Anchor operations to run:${NC}"
+    echo -e "${CYAN}Select Anchor operations to run (DevNet):${NC}"
     echo
     
     if [ "$ENABLE_ANCHOR_CLEAN" = true ]; then
@@ -240,14 +325,17 @@ show_menu() {
     fi
     
     if [ "$ENABLE_ANCHOR_DEPLOY" = true ]; then
-        echo -e "  ${GREEN}3${NC}) Deploy project"
+        echo -e "  ${GREEN}3${NC}) Deploy to DevNet"
     fi
     
     if [ "$ENABLE_ANCHOR_TEST" = true ]; then
-        echo -e "  ${GREEN}4${NC}) Run tests"
+        echo -e "  ${GREEN}4${NC}) Test on DevNet"
     fi
     
     echo -e "  ${GREEN}5${NC}) Run all operations"
+    echo -e "  ${GREEN}6${NC}) Request airdrop"
+    echo -e "  ${GREEN}7${NC}) Check balance"
+    echo -e "  ${GREEN}8${NC}) Change wallet directory"
     echo -e "  ${GREEN}0${NC}) Exit"
     echo
     echo -e -n "${CYAN}Your choice (comma-separated for multiple, e.g., 1,2,3): ${NC}"
@@ -264,6 +352,23 @@ check_solana_installed
 # Clear screen and print header
 clear
 print_header
+
+# Check and set wallet
+if ! check_wallet; then
+    echo -e -n "${CYAN}Enter full path to your wallet file: ${NC}"
+    read custom_wallet
+    if [ -f "$custom_wallet" ]; then
+        WALLET_DIR=$(dirname "$custom_wallet")
+        WALLET_FILE=$(basename "$custom_wallet")
+        check_wallet
+    else
+        print_error "Wallet file not found: $custom_wallet"
+        exit 1
+    fi
+fi
+
+# Show initial balance
+show_balance
 
 # =============================================
 # MAIN EXECUTION
@@ -320,6 +425,29 @@ for choice in "${choices_array[@]}"; do
                 echo
             fi
             ;;
+        6)
+            request_airdrop 2
+            ;;
+        7)
+            show_balance
+            ;;
+        8)
+            echo -e -n "${CYAN}Enter new wallet directory: ${NC}"
+            read new_dir
+            if [ -d "$new_dir" ]; then
+                WALLET_DIR="$new_dir"
+                echo -e -n "${CYAN}Enter wallet file name: ${NC}"
+                read new_file
+                if [ -f "$WALLET_DIR/$new_file" ]; then
+                    WALLET_FILE="$new_file"
+                    check_wallet
+                else
+                    print_error "Wallet file not found: $WALLET_DIR/$new_file"
+                fi
+            else
+                print_error "Directory not found: $new_dir"
+            fi
+            ;;
         *)
             print_error "Invalid option: $choice"
             ;;
@@ -330,9 +458,10 @@ for choice in "${choices_array[@]}"; do
 done
 
 print_info "Operations completed"
-print_info "For more Anchor CLI details, see: https://www.anchor-lang.com/docs/references/cli"
+print_info "Final balance: $(get_balance) SOL"
+print_info "Explorer: https://explorer.solana.com/?cluster=devnet"
 
 # Show final status
 echo -e "${GREEN}=============================================${NC}"
-echo -e "${GREEN}Script execution finished${NC}"
+echo -e "${GREEN}DevNet deployment script execution finished${NC}"
 echo -e "${GREEN}=============================================${NC}"
