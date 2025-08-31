@@ -12,8 +12,8 @@ a1 = "7WpuY6r6vwyfsmxbkhBxB7Nxzg7szk39qG8JJDP9mvFo"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
-wallet = "~/.config/solana/id.json"
+cluster = "devnet"
+wallet = "./pee/wallet_1.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
