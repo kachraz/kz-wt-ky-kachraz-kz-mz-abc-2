@@ -8,6 +8,7 @@
 # ENABLE_CREATE_WALLET=true
 ENABLE_CHECK_BALANCE=true
 # ENABLE_TRANSFER_FUNDS=true
+ENABLE_AIRDROP=true
 
 # =============================================
 # COLOR DEFINITIONS
@@ -41,7 +42,7 @@ RPC_URL="https://api.devnet.solana.com"
 # FILE PATHS
 # =============================================
 
-WALLET_DIR="./s1"
+WALLET_DIR="./walz"
 BALANCE_FILE="$WALLET_DIR/balances.txt"
 LOG_FILE="$WALLET_DIR/solana_operations.log"
 
@@ -95,6 +96,32 @@ create_wallet_directory() {
     if [ ! -d "$WALLET_DIR" ]; then
         mkdir -p "$WALLET_DIR"
         print_status "Created wallet directory: $WALLET_DIR"
+    fi
+}
+
+select_wallet_file() {
+    local wallet_files=("$WALLET_DIR"/*.json)
+    
+    if [ ${#wallet_files[@]} -eq 0 ] || [ ! -f "${wallet_files[0]}" ]; then
+        print_error "No wallets found in $WALLET_DIR"
+        return 1
+    fi
+    
+    echo -e "${CYAN}Available wallets:${NC}"
+    for i in "${!wallet_files[@]}"; do
+        local pubkey=$(solana-keygen pubkey "${wallet_files[$i]}" 2>/dev/null || echo "Unknown")
+        echo -e "  ${GREEN}$(($i+1))${NC}) ${YELLOW}$(basename "${wallet_files[$i]}")${NC} -> ${BLUE}$pubkey${NC}"
+    done
+    
+    echo -e -n "${CYAN}Select a wallet (1-${#wallet_files[@]}): ${NC}"
+    read selection
+    
+    if [[ $selection =~ ^[0-9]+$ ]] && [ "$selection" -ge 1 ] && [ "$selection" -le ${#wallet_files[@]} ]; then
+        SELECTED_WALLET="${wallet_files[$(($selection-1))]}"
+        return 0
+    else
+        print_error "Invalid selection"
+        return 1
     fi
 }
 
@@ -300,6 +327,79 @@ transfer_funds() {
     fi
 }
 
+airdrop_funds() {
+    if [ "$ENABLE_AIRDROP" = false ]; then
+        print_warning "Airdrop function is disabled"
+        return
+    fi
+    
+    echo -e "${CYAN}Requesting airdrop...${NC}"
+    
+    # Find all JSON files in the wallet directory
+    local wallet_files=("$WALLET_DIR"/*.json)
+    
+    if [ ${#wallet_files[@]} -eq 0 ] || [ ! -f "${wallet_files[0]}" ]; then
+        print_error "No wallets found in $WALLET_DIR"
+        return 1
+    fi
+    
+    # Show available wallets
+    echo -e "${CYAN}Available wallets:${NC}"
+    for i in "${!wallet_files[@]}"; do
+        local pubkey=$(solana-keygen pubkey "${wallet_files[$i]}" 2>/dev/null || echo "Unknown")
+        echo -e "  ${GREEN}$(($i+1))${NC}) ${YELLOW}$(basename "${wallet_files[$i]}")${NC} -> ${BLUE}$pubkey${NC}"
+    done
+    
+    # Select wallet for airdrop
+    echo -e -n "${CYAN}Select wallet for airdrop (1-${#wallet_files[@]}): ${NC}"
+    read selection
+    
+    if [[ ! "$selection" =~ ^[0-9]+$ ]] || [ "$selection" -lt 1 ] || [ "$selection" -gt ${#wallet_files[@]} ]; then
+        print_error "Invalid selection"
+        return 1
+    fi
+    
+    local selected_wallet="${wallet_files[$(($selection-1))]}"
+    local pubkey=$(solana-keygen pubkey "$selected_wallet")
+    
+    # Get amount
+    echo -e -n "${CYAN}Enter amount to airdrop (default: $DEFAULT_AIRDROP_AMOUNT): ${NC}"
+    read amount
+    amount=${amount:-$DEFAULT_AIRDROP_AMOUNT}
+    
+    # Confirm airdrop
+    echo
+    echo -e "${YELLOW}Airdrop details:${NC}"
+    echo -e "  ${YELLOW}Wallet:${NC}  ${GREEN}$pubkey${NC}"
+    echo -e "  ${YELLOW}Amount:${NC}  ${BLUE}$amount SOL${NC}"
+    echo -e "  ${YELLOW}Network:${NC} ${MAGENTA}$NETWORK${NC}"
+    echo
+    echo -e -n "${CYAN}Confirm airdrop? (y/N): ${NC}"
+    read confirm
+    
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        print_info "Airdrop cancelled"
+        return
+    fi
+    
+    # Perform airdrop
+    print_info "Requesting airdrop..."
+    solana airdrop "$amount" "$pubkey" --url $RPC_URL
+    
+    if [ $? -eq 0 ]; then
+        print_status "Airdrop successful!"
+        log_message "Airdropped $amount SOL to $pubkey"
+        
+        # Show new balance
+        echo
+        print_info "New balance:"
+        solana balance "$pubkey" --url $RPC_URL
+    else
+        print_error "Airdrop failed"
+        log_message "Failed to airdrop $amount SOL to $pubkey"
+    fi
+}
+
 # =============================================
 # MAIN MENU
 # =============================================
@@ -317,8 +417,12 @@ show_menu() {
         echo -e "  ${GREEN}2${NC}) Check ALL wallet balances"
     fi
     
+    if [ "$ENABLE_AIRDROP" = true ]; then
+        echo -e "  ${GREEN}3${NC}) Request airdrop"
+    fi
+    
     if [ "$ENABLE_TRANSFER_FUNDS" = true ]; then
-        echo -e "  ${GREEN}3${NC}) Transfer funds"
+        echo -e "  ${GREEN}4${NC}) Transfer funds"
     fi
     
     echo -e "  ${GREEN}0${NC}) Exit"
@@ -361,6 +465,13 @@ case $choice in
         fi
         ;;
     3)
+        if [ "$ENABLE_AIRDROP" = true ]; then
+            airdrop_funds
+        else
+            print_warning "This option is disabled"
+        fi
+        ;;
+    4)
         if [ "$ENABLE_TRANSFER_FUNDS" = true ]; then
             transfer_funds
         else
